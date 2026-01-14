@@ -1,0 +1,178 @@
+App Name: LetterCraft
+
+App Purpose
+
+A professional mobile application for generating official letters using AI-learned writing styles. Designed for universities, government offices, and corporate users who need to generate consistent, formal correspondence.
+
+App Screens and Flow
+Now I have a complete understanding of your LetterCraft application. Let me prepare a comprehensive, non-technical specification document that you can use on Replit or Rork to build the mobile app.
+
+LetterCraft Mobile App - Complete Specification Document
+
+Based on my analysis of your current web application, here is a complete, non-technical specification that you can share with any mobile app builder (Replit, Rork, or others):
+
+App Name: LetterCraft
+
+App Purpose
+
+A professional mobile application for generating official letters using AI-learned writing styles. Designed for universities, government offices, and corporate users who need to generate consistent, formal correspondence.
+
+App Screens and Flow
+
+Diagram
+Screen-by-Screen Breakdown
+
+Screen 1: Landing Screen
+
+App logo and branding (LetterCraft with pen icon)
+Headline: "Generate Official Letters In Your Own Writing Style"
+Subtext explaining the app is for universities, government, and corporates
+Three feature cards showing: Style Profiles, AI Generation, Print Ready
+"Get Started" button leading to Login
+Screen 2: Login Screen
+
+App logo at top
+Email input field
+Password input field
+Login button
+Back to home link
+Simple, clean design centered on screen
+Screen 3: Home Screen (Main Letter Generator) This is the primary screen after login with two sections:
+
+Left/Top Section - Input Controls:
+
+Dropdown to select a saved writing style profile
+Large text area for letter instructions (user describes what letter they need)
+"Generate Letter" button with sparkle icon
+Letterhead manager section (see below)
+Right/Bottom Section - Output Display:
+
+A4-sized preview area showing the generated letter
+Action buttons when letter is generated:
+Refine (regenerate/improve)
+Download as TXT
+Preview as PDF
+Download as PDF
+Letterhead Manager (embedded in Home Screen):
+
+Grid showing saved letterhead images
+Upload new letterhead button
+When uploading: prompt for letterhead name
+Select a letterhead to include at top of PDF
+Delete letterhead option
+Screen 4: Style Profiles List
+
+Page title and description
+"Create New Profile" button
+Table/list showing all saved profiles with:
+Profile name
+Description
+Created date
+"Select" button to make active
+Delete button
+Empty state with prompt to create first profile
+Screen 5: Create Style Profile
+
+Profile name input (required)
+Description text area (optional)
+File upload zone with:
+"Take Photo" button (camera capture)
+"Choose File" button (file picker)
+Drag and drop area
+Shows uploaded files with thumbnails
+Recommendation to upload 3-6 sample letters
+"Analyze & Save Style" button
+Loading state showing "Analyzing your writing style..."
+Screen 6: PDF Preview Modal
+
+Full-screen modal overlay
+PDF document viewer
+Download button
+Close button
+Core Features
+
+Feature 1: AI Letter Generation
+
+User selects a style profile
+User types instructions describing the letter they need
+App sends request to backend API
+Generated letter appears in preview area
+Letter can be refined/regenerated
+Feature 2: Style Profile Training
+
+User uploads 3-6 sample letters (JPEG images or PDF)
+Files are sent to backend for AI analysis
+Backend extracts writing patterns, tone, and style
+Profile is saved for future letter generation
+Feature 3: PDF Generation with Custom Fonts
+
+Generate professional A4 PDF documents
+Embed custom Unicode fonts for proper character rendering
+Support for English and Marathi (Devanagari script)
+Automatic font selection based on content language
+Include optional letterhead at top of PDF
+Feature 4: Letterhead Management
+
+Upload company/organization letterhead images
+Save multiple letterheads with names
+Select which letterhead to use for each letter
+Letterhead appears at top of generated PDFs
+Feature 5: Multi-language Support
+
+English text rendering
+Marathi (Devanagari) text rendering
+Automatic language detection for font selection
+Uses Noto Sans for English, Noto Sans Devanagari for Marathi
+Backend API Integrations Required
+
+API 1: Style Profile Analysis (n8n Webhook)
+
+Endpoint: POST request
+Sends: style_name, description, multiple file attachments
+Purpose: Analyzes uploaded sample letters to learn writing style
+API 2: Letter Generation (n8n Webhook)
+
+Endpoint: POST request
+Sends: profile_id, context (user instructions)
+Returns: Generated letter text
+Purpose: Creates new letter based on selected style and user instructions
+API 3: Database (Supabase)
+
+Table: letter_style_profiles (id, profile_name, description, created_at)
+Table: letterheads (id, name, image_url, created_at)
+Storage bucket: letterheads (for uploaded letterhead images)
+File Types Supported
+
+Image uploads: JPEG, JPG, PNG
+PDF documents
+Camera capture (JPEG)
+Export Formats
+
+TXT file download
+PDF file download (with embedded fonts and letterhead)
+Mobile-Specific Considerations
+
+Camera capture button for taking photos of letters
+Touch-friendly file upload with large tap targets
+Responsive layout that works on phones and tablets
+Native share functionality for generated PDFs
+Offline indicator (requires internet for AI features)
+Design Style
+
+Clean, professional appearance
+Primary color: Brand accent color
+Card-based layout with subtle shadows
+Rounded corners on cards and buttons
+Clear typography hierarchy
+Light/neutral background
+User Flow Summary
+
+User opens app and sees landing page
+User logs in with email/password
+User arrives at Home screen
+User selects a style profile (or creates one first)
+User types letter instructions
+User taps "Generate Letter"
+AI generates letter and displays it
+User can refine, preview as PDF, or download
+User can add letterhead before downloading PDF
