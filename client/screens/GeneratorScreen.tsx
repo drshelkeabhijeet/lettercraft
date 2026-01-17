@@ -78,8 +78,8 @@ export default function GeneratorScreen() {
       const mappedSupabaseProfiles: StyleProfile[] = supabaseProfiles.map(
         (p: SupabaseStyleProfile) => ({
           id: p.id,
-          name: p.profile_name,
-          description: p.description || "",
+          name: p.ocr_set_name,
+          description: "",
           createdAt: p.created_at,
           sampleCount: 0,
         })
@@ -207,8 +207,8 @@ export default function GeneratorScreen() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          profileId: selectedProfile.id,
-          instructions: instructions.trim(),
+          ocr_set_name: selectedProfile.name,
+          instruction: instructions.trim(),
         }),
       });
 
@@ -240,8 +240,8 @@ export default function GeneratorScreen() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          profileId: selectedProfile?.id,
-          instructions: `${instructions.trim()}\n\nPlease refine and improve the previous version.`,
+          ocr_set_name: selectedProfile?.name,
+          instruction: `${instructions.trim()}\n\nPlease refine and improve the previous version.`,
         }),
       });
 

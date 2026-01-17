@@ -2,8 +2,7 @@ import { getApiUrl } from "./query-client";
 
 export interface SupabaseStyleProfile {
   id: string;
-  profile_name: string;
-  description: string;
+  ocr_set_name: string;
   created_at: string;
 }
 

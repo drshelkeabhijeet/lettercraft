@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   FlatList,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -14,7 +15,9 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
+import * as FileSystem from "expo-file-system";
 import { HeaderButton } from "@react-navigation/elements";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -31,6 +34,7 @@ interface UploadedFile {
   id: string;
   uri: string;
   name: string;
+  mimeType?: string;
 }
 
 export default function CreateProfileScreen() {
@@ -45,18 +49,19 @@ export default function CreateProfileScreen() {
 
   const isValid = name.trim().length > 0 && files.length > 0;
 
-  const handlePickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      quality: 0.8,
+  const handlePickFiles = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ["image/*", "application/pdf"],
+      multiple: true,
+      copyToCacheDirectory: true,
     });
 
-    if (!result.canceled) {
-      const newFiles = result.assets.map((asset, index) => ({
+    if (!result.canceled && result.assets) {
+      const newFiles = result.assets.map((asset: DocumentPicker.DocumentPickerAsset, index: number) => ({
         id: `${Date.now()}-${index}`,
         uri: asset.uri,
-        name: asset.fileName || `Sample ${files.length + index + 1}`,
+        name: asset.name || `Sample ${files.length + index + 1}`,
+        mimeType: asset.mimeType,
       }));
       setFiles([...files, ...newFiles]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -99,8 +104,9 @@ export default function CreateProfileScreen() {
     setIsAnalyzing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
+    const profileId = Date.now().toString();
     const newProfile = {
-      id: Date.now().toString(),
+      id: profileId,
       name: name.trim(),
       description: description.trim(),
       createdAt: new Date().toISOString(),
@@ -108,17 +114,37 @@ export default function CreateProfileScreen() {
     };
 
     try {
+      const formData = new FormData();
+      formData.append("ocr_set_name", name.trim());
+      formData.append("description", description.trim());
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileUri = file.uri;
+        const fileName = file.name || `letter_${i + 1}`;
+        const mimeType = file.mimeType || "image/jpeg";
+        
+        if (Platform.OS === "web") {
+          const response = await fetch(fileUri);
+          const blob = await response.blob();
+          formData.append("files", blob, fileName);
+        } else {
+          const fileInfo = await FileSystem.getInfoAsync(fileUri);
+          if (fileInfo.exists) {
+            formData.append("files", {
+              uri: fileUri,
+              name: fileName,
+              type: mimeType,
+            } as any);
+          }
+        }
+      }
+
       const response = await fetch(
-        "https://abhijeetshelke.app.n8n.cloud/webhook/01cc3e07-9542-407d-a89c-103e788f30c8",
+        "https://abhijeetshelke.app.n8n.cloud/webhook/d2691e15-a9d6-4066-bb12-73299f0ba003",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...newProfile,
-            files: files.map((f) => ({ id: f.id, name: f.name, uri: f.uri })),
-          }),
+          body: formData,
         }
       );
 
@@ -269,9 +295,9 @@ export default function CreateProfileScreen() {
                 { borderColor: Colors.light.primary },
                 pressed && styles.buttonPressed,
               ]}
-              onPress={handlePickImage}
+              onPress={handlePickFiles}
             >
-              <Feather name="image" size={20} color={Colors.light.primary} />
+              <Feather name="folder" size={20} color={Colors.light.primary} />
               <ThemedText type="caption" style={{ color: Colors.light.primary }}>
                 Choose Files
               </ThemedText>
@@ -282,11 +308,20 @@ export default function CreateProfileScreen() {
             <View style={styles.filesGrid}>
               {files.map((file) => (
                 <View key={file.id} style={styles.fileItem}>
-                  <Image
-                    source={{ uri: file.uri }}
-                    style={styles.fileThumbnail}
-                    contentFit="cover"
-                  />
+                  {file.mimeType === "application/pdf" ? (
+                    <View style={[styles.fileThumbnail, styles.pdfThumbnail, { backgroundColor: theme.backgroundSecondary }]}>
+                      <Feather name="file-text" size={32} color={Colors.light.primary} />
+                      <ThemedText type="small" numberOfLines={1} style={styles.pdfName}>
+                        {file.name}
+                      </ThemedText>
+                    </View>
+                  ) : (
+                    <Image
+                      source={{ uri: file.uri }}
+                      style={styles.fileThumbnail}
+                      contentFit="cover"
+                    />
+                  )}
                   <Pressable
                     style={[
                       styles.removeButton,
@@ -392,6 +427,16 @@ const styles = StyleSheet.create({
     width: 80,
     height: 100,
     borderRadius: BorderRadius.xs,
+  },
+  pdfThumbnail: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.xs,
+  },
+  pdfName: {
+    marginTop: Spacing.xs,
+    textAlign: "center",
+    width: "100%",
   },
   removeButton: {
     position: "absolute",
