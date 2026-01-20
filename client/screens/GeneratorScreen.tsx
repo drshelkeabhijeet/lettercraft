@@ -491,9 +491,14 @@ export default function GeneratorScreen() {
               </View>
             </View>
 
-            <ThemedText type="caption" secondary style={styles.label}>
-              Generated Letter
-            </ThemedText>
+            <View style={styles.labelRow}>
+              <ThemedText type="caption" secondary style={styles.label}>
+                Generated Letter
+              </ThemedText>
+              <ThemedText type="small" muted>
+                Tap to edit
+              </ThemedText>
+            </View>
             <View style={styles.a4Container}>
               <View
                 style={[styles.letterPreview, { backgroundColor: "#FFFFFF" }]}
@@ -510,12 +515,17 @@ export default function GeneratorScreen() {
                   nestedScrollEnabled
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={styles.letterContent}
+                  keyboardShouldPersistTaps="handled"
                 >
-                  <ThemedText
-                    style={[styles.letterText, { color: "#1F2937" }]}
-                  >
-                    {generatedLetter}
-                  </ThemedText>
+                  <TextInput
+                    style={[styles.letterText, styles.letterTextInput, { color: "#1F2937" }]}
+                    value={generatedLetter}
+                    onChangeText={setGeneratedLetter}
+                    multiline
+                    textAlignVertical="top"
+                    scrollEnabled={false}
+                    testID="input-generated-letter"
+                  />
                 </ScrollView>
               </View>
             </View>
@@ -590,6 +600,11 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: Spacing.sm,
+  },
+  labelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   selector: {
     flexDirection: "row",
@@ -678,6 +693,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 20,
     fontFamily: "serif",
+  },
+  letterTextInput: {
+    flex: 1,
+    minHeight: 300,
+    padding: 0,
+    margin: 0,
+    backgroundColor: "transparent",
   },
   actionButtons: {
     flexDirection: "row",
