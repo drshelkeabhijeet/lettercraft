@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import LandingScreen from "@/screens/LandingScreen";
 import LoginScreen from "@/screens/LoginScreen";
+import PhoneAuthScreen from "@/screens/PhoneAuthScreen";
 import CreateProfileScreen from "@/screens/CreateProfileScreen";
 import PDFPreviewScreen from "@/screens/PDFPreviewScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
@@ -15,6 +16,7 @@ import { Colors } from "@/constants/theme";
 export type RootStackParamList = {
   Landing: undefined;
   Login: undefined;
+  PhoneAuth: undefined;
   Main: undefined;
   CreateProfile: undefined;
   PDFPreview: { content: string; letterhead?: string };
@@ -47,6 +49,11 @@ export default function RootStackNavigator() {
           <Stack.Screen
             name="Login"
             component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="PhoneAuth"
+            component={PhoneAuthScreen}
             options={{ headerShown: false }}
           />
         </>

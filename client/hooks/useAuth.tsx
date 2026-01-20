@@ -1,75 +1,80 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase, signInWithPhone, verifyOtp as verifyOtpApi, signOut as signOutApi } from "@/lib/supabase-client";
+import type { User as SupabaseUser, Session, AuthError } from "@supabase/supabase-js";
 
 interface User {
   id: string;
-  email: string;
-  name: string;
+  phone: string | null;
+  email: string | null;
 }
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  sendOtp: (phone: string) => Promise<{ error: AuthError | null }>;
+  verifyOtp: (phone: string, token: string) => Promise<{ error: AuthError | null }>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_KEY = "@lettercraft:auth";
+function mapSupabaseUser(supabaseUser: SupabaseUser | null): User | null {
+  if (!supabaseUser) return null;
+  return {
+    id: supabaseUser.id,
+    phone: supabaseUser.phone || null,
+    email: supabaseUser.email || null,
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadUser();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(mapSupabaseUser(session?.user || null));
+      setIsLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(mapSupabaseUser(session?.user || null));
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const loadUser = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(AUTH_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error("Failed to load user:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const sendOtp = async (phone: string): Promise<{ error: AuthError | null }> => {
+    const { error } = await signInWithPhone(phone);
+    return { error };
   };
 
-  const login = async (email: string, password: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    const newUser: User = {
-      id: Date.now().toString(),
-      email: email.toLowerCase(),
-      name: email.split("@")[0],
-    };
-
-    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
-    setUser(newUser);
+  const verifyOtp = async (phone: string, token: string): Promise<{ error: AuthError | null }> => {
+    const { error } = await verifyOtpApi(phone, token);
+    return { error };
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem(AUTH_KEY);
-    await AsyncStorage.multiRemove([
-      "@lettercraft:profiles",
-      "@lettercraft:letterheads",
-      "@lettercraft:letters",
-    ]);
+    await signOutApi();
     setUser(null);
+    setSession(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
+        session,
+        isAuthenticated: !!session,
         isLoading,
-        login,
+        sendOtp,
+        verifyOtp,
         logout,
       }}
     >

@@ -87,8 +87,37 @@ export default function CreateProfileScreen() {
         id: Date.now().toString(),
         uri: result.assets[0].uri,
         name: `Sample ${files.length + 1}`,
+        mimeType: "image/jpeg",
       };
       setFiles([...files, newFile]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const handlePickPhotos = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Photo library permission is needed to select photos"
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsMultipleSelection: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets) {
+      const newFiles = result.assets.map((asset, index) => ({
+        id: `${Date.now()}-${index}`,
+        uri: asset.uri,
+        name: asset.fileName || `Photo ${files.length + index + 1}`,
+        mimeType: asset.mimeType || "image/jpeg",
+      }));
+      setFiles([...files, ...newFiles]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   };
@@ -274,7 +303,7 @@ export default function CreateProfileScreen() {
             Upload 3-6 sample letters to train your writing style
           </ThemedText>
 
-          <View style={styles.uploadButtons}>
+          <View style={styles.uploadButtonsRow}>
             <Pressable
               style={({ pressed }) => [
                 styles.uploadButton,
@@ -283,9 +312,23 @@ export default function CreateProfileScreen() {
               ]}
               onPress={handleTakePhoto}
             >
-              <Feather name="camera" size={20} color={Colors.light.primary} />
-              <ThemedText type="caption" style={{ color: Colors.light.primary }}>
-                Take Photo
+              <Feather name="camera" size={18} color={Colors.light.primary} />
+              <ThemedText type="small" style={{ color: Colors.light.primary }}>
+                Camera
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.uploadButton,
+                { borderColor: Colors.light.primary },
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={handlePickPhotos}
+            >
+              <Feather name="image" size={18} color={Colors.light.primary} />
+              <ThemedText type="small" style={{ color: Colors.light.primary }}>
+                Photos
               </ThemedText>
             </Pressable>
 
@@ -297,9 +340,9 @@ export default function CreateProfileScreen() {
               ]}
               onPress={handlePickFiles}
             >
-              <Feather name="folder" size={20} color={Colors.light.primary} />
-              <ThemedText type="caption" style={{ color: Colors.light.primary }}>
-                Choose Files
+              <Feather name="folder" size={18} color={Colors.light.primary} />
+              <ThemedText type="small" style={{ color: Colors.light.primary }}>
+                Files
               </ThemedText>
             </Pressable>
           </View>
@@ -396,18 +439,18 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     marginBottom: Spacing.lg,
   },
-  uploadButtons: {
+  uploadButtonsRow: {
     flexDirection: "row",
-    gap: Spacing.md,
+    gap: Spacing.sm,
     marginBottom: Spacing.lg,
   },
   uploadButton: {
     flex: 1,
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap: Spacing.sm,
-    height: 48,
+    gap: Spacing.xs,
+    height: 56,
     borderWidth: 1.5,
     borderRadius: BorderRadius.xs,
     borderStyle: "dashed",

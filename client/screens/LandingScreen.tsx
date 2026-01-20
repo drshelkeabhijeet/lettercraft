@@ -97,7 +97,7 @@ export default function LandingScreen() {
             { backgroundColor: Colors.light.primary },
             pressed && styles.buttonPressed,
           ]}
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => navigation.navigate("PhoneAuth")}
           testID="button-get-started"
         >
           <ThemedText
